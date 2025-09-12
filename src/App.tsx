@@ -981,7 +981,7 @@ function App() {
             </Suspense>
           </Canvas>
           <img
-            src="/src/assets/images/me.png"
+            src="/public/me.png"
             style={{ width: "200px", borderRadius: "50%", marginBottom: "1rem", zIndex: 3 }}
           />
           <h1 style={{ fontSize: "2.5rem", color: "#22d3ee", zIndex: 3 }}>Hi, I'm Heran 👋</h1>
