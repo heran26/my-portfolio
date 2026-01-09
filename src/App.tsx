@@ -1,40 +1,17 @@
+// App.tsx
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
-import SolarSystem, { planets } from "./components/SolarSystem";
-import type { Planet } from "./components/SolarSystem";
 import React, { Suspense, useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import { GLTFLoader } from "three-stdlib";
 
-// ---------- Custom Line Component ----------
-function Line({
-  start,
-  end,
-  color = "#22d3ee",
-  opacity = 0.5,
-}: {
-  start: [number, number, number];
-  end: [number, number, number];
-  color?: string;
-  opacity?: number;
-}) {
-  const lineRef = useRef<THREE.Line>(null!);
-  const line = useMemo(() => {
-    const geometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(...start),
-      new THREE.Vector3(...end),
-    ]);
-    const material = new THREE.LineBasicMaterial({
-      color,
-      transparent: true,
-      opacity,
-    });
-    return new THREE.Line(geometry, material);
-  }, [start, end, color, opacity]);
-
-  return <primitive object={line} ref={lineRef} />;
-}
+import Home from "./sections/Home";
+import About from "./sections/About";
+import Skills from "./sections/Skills";
+import Experience from "./sections/Experience";
+import Projects from "./sections/Projects";
+import Contact from "./sections/Contact";
 
 // ---------- Starfield ----------
 function Starfield({
@@ -159,244 +136,6 @@ function BackgroundStars({
         />
       </Suspense>
     </Canvas>
-  );
-}
-
-// ---------- Skill Constellation ----------
-function SkillConstellation() {
-  // Customization variables
-  const LEFT_OFFSET: [number, number, number] = [-1.5, 0.0, 0];
-  const RIGHT_OFFSET: [number, number, number] = [2.5, 0.0, 0];
-  const CENTER_OFFSET: [number, number, number] = [0, 1.0, 0];
-  const SKILL_TEXT_SIZE: number = 0.6;
-
-  // One star (skill point)
-  function Star({ position, color, label, index }: { position: [number, number, number]; color: string; label: string; index: number }) {
-    return (
-      <mesh ref={(el) => (starRefs.current[index] = el)} position={position}>
-        <sphereGeometry args={[0.15, 16, 16]} />
-        <meshBasicMaterial color={color} />
-        <Html center distanceFactor={6}>
-          <div style={{ 
-            color: "white", 
-            fontSize: `${SKILL_TEXT_SIZE}rem`,
-            textAlign: "center", 
-            background: "rgba(0,0,0,0.8)", 
-            padding: "3px 5px", 
-            borderRadius: 3, 
-            border: "1px solid #22d3ee", 
-            whiteSpace: "nowrap",
-            boxShadow: "0 0 6px rgba(34, 211, 238, 0.5)"
-          }}>
-            {label}
-          </div>
-        </Html>
-      </mesh>
-    );
-  }
-
-  // Lines between stars
-  function Connection({ start, end, color = "#22d3ee" }: { start: [number, number, number]; end: [number, number, number]; color?: string }) {
-    return <Line start={start} end={end} color={color} opacity={0.5} />;
-  }
-
-  // Define grouped constellations with explicit tuple type
-  const skills: {
-    hat: { name: string; pos: [number, number, number] }[];
-    book: { name: string; pos: [number, number, number] }[];
-    cluster: { name: string; pos: [number, number, number] }[];
-    center: { name: string; pos: [number, number, number] }[];
-  } = {
-    hat: [
-      { name: "HTML", pos: [-0.5, 0.4, 0] },
-      { name: "CSS", pos: [0, 0.8, 0] },
-      { name: "JavaScript", pos: [0.5, 0.4, 0] },
-      { name: "NoSQL", pos: [0.7, -0.3, 0] },
-      { name: "Git", pos: [1.0, -0.5, 0] },
-      { name: "Advanced SQL", pos: [1.3, -0.3, 0] },
-      { name: "DevOps", pos: [1.0, -0.1, 0] },
-    ],
-    book: [
-      { name: "Python", pos: [-0.7, -0.3, 0] },
-      { name: "C++", pos: [-0.2, -0.3, 0] },
-      { name: "Java", pos: [-0.7, -0.7, 0] },
-      { name: "SQL", pos: [-0.2, -0.7, 0] },
-    ],
-    cluster: [
-      { name: "Mobile Dev", pos: [-0.5, 0.2, 0] },
-      { name: "Flutter", pos: [-0.8, 0.6, 0] },
-      { name: "Machine Learning", pos: [-0.2, 0.6, 0] },
-    ],
-    center: [{ name: "Full Stack Web Development", pos: [0, 0, 0] }],
-  };
-
-  const allSkills = useMemo(() => [
-    ...skills.center.map(s => ({ ...s, baseScale: 0.25 })),
-    ...skills.hat.map(s => ({ ...s, baseScale: 0.15 })),
-    ...skills.book.map(s => ({ ...s, baseScale: 0.15 })),
-    ...skills.cluster.map(s => ({ ...s, baseScale: 0.15 })),
-  ], []);
-
-  const starRefs = useRef<(THREE.Mesh | null)[]>(new Array(allSkills.length).fill(null));
-  const phases = useMemo(() => new Array(allSkills.length).fill(0).map(() => Math.random() * Math.PI * 2), []);
-
-  const groupRef = useRef<THREE.Group>(null!);
-  const color = "#22d3ee";
-
-  useFrame(({ clock }) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.001;
-    }
-    const time = clock.getElapsedTime();
-    starRefs.current.forEach((star, index) => {
-      if (star) {
-        const base = allSkills[index].baseScale || 0.15;
-        const pulse = 0.03 * Math.sin(time * 2 + phases[index]);
-        star.scale.set(base + pulse, base + pulse, base + pulse);
-      }
-    });
-  });
-
-  return (
-    <group ref={groupRef} position={[0, 0.5, 0]}>
-      {/* Center star */}
-      <group position={CENTER_OFFSET}>
-        {skills.center.map((s, i) => (
-          <Star key={`center-${i}`} position={s.pos} color={color} label={s.name} index={i} />
-        ))}
-      </group>
-
-      {/* Hat constellation (triangle) on left */}
-      <group position={LEFT_OFFSET}>
-        {skills.hat.map((s, i) => (
-          <Star key={`hat-${i}`} position={s.pos} color={color} label={s.name} index={i + skills.center.length} />
-        ))}
-        <Connection start={skills.hat[0].pos} end={skills.hat[1].pos} />
-        <Connection start={skills.hat[1].pos} end={skills.hat[2].pos} />
-        <Connection start={skills.hat[2].pos} end={skills.hat[3].pos} />
-        <Connection start={skills.hat[3].pos} end={skills.hat[4].pos} />
-        <Connection start={skills.hat[4].pos} end={skills.hat[5].pos} />
-        <Connection start={skills.hat[5].pos} end={skills.hat[0].pos} />
-      </group>
-
-      {/* Book constellation (rectangle) on right */}
-      <group position={RIGHT_OFFSET}>
-        {skills.book.map((s, i) => (
-          <Star key={`book-${i}`} position={s.pos} color={color} label={s.name} index={i + skills.center.length + skills.hat.length} />
-        ))}
-        <Connection start={skills.book[0].pos} end={skills.book[1].pos} />
-        <Connection start={skills.book[1].pos} end={skills.book[3].pos} />
-        <Connection start={skills.book[3].pos} end={skills.book[2].pos} />
-        <Connection start={skills.book[2].pos} end={skills.book[0].pos} />
-      </group>
-
-      {/* Cluster constellation on right */}
-      <group position={[RIGHT_OFFSET[0], RIGHT_OFFSET[1] + 0.6, RIGHT_OFFSET[2]]}>
-        {skills.cluster.map((s, i) => (
-          <Star key={`cluster-${i}`} position={s.pos} color={color} label={s.name} index={i + skills.center.length + skills.hat.length + skills.book.length } />
-        ))}
-        <Connection start={skills.cluster[0].pos} end={skills.cluster[1].pos} />
-        <Connection start={skills.cluster[1].pos} end={skills.cluster[2].pos} />
-        <Connection start={skills.cluster[2].pos} end={skills.cluster[0].pos} />
-      </group>
-    </group>
-  );
-}
-
-// ---------- Astronaut Avatar (Fallback Sphere) ----------
-function AstronautAvatar() {
-  const avatarRef = useRef<THREE.Mesh>(null!);
-
-  useFrame(({ clock }) => {
-    if (avatarRef.current) {
-      avatarRef.current.position.y = Math.sin(clock.elapsedTime) * 0.1;
-    }
-  });
-
-  return (
-    <mesh ref={avatarRef} position={[15, -3, 0]} scale={[0.5, 0.5, 0.5]}>
-      <sphereGeometry args={[0.5, 16, 16]} />
-      <meshBasicMaterial color="#22d3ee" />
-    </mesh>
-  );
-}
-
-// --- Overlay project details ---
-function ProjectDetail({
-  planet,
-  onBack,
-}: {
-  planet: Planet | null;
-  onBack: () => void;
-}) {
-  if (!planet) return null;
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 100,
-      }}
-    >
-      <div
-        style={{
-          background: "rgba(17,24,39,0.9)",
-          padding: "2rem",
-          borderRadius: "0.75rem",
-          maxWidth: "80%",
-          width: "90%",
-          color: "white",
-          display: "flex",
-          flexDirection: "row",
-          gap: "1.5rem",
-        }}
-      >
-        <div style={{ width: "33%" }}>
-          <h3 style={{ fontSize: "1.5rem", fontWeight: 600, color: "#22d3ee" }}>
-            Technologies
-          </h3>
-          <ul style={{ color: "#d1d5db", listStyle: "disc", paddingLeft: "1.25rem" }}>
-            {planet.technologies.map((t, i) => (
-              <li key={i}>{t}</li>
-            ))}
-          </ul>
-          <a
-            href={planet.link}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              background: "#06b6d4",
-              padding: "0.5rem 1.25rem",
-              borderRadius: "0.25rem",
-              color: "white",
-              display: "inline-block",
-              marginTop: "0.75rem",
-            }}
-          >
-            View Project
-          </a>
-        </div>
-        <div style={{ width: "67%", position: "relative" }}>
-          <button
-            onClick={onBack}
-            style={{ position: "absolute", top: "0.75rem", right: "1rem", fontSize: "2rem" }}
-          >
-            ×
-          </button>
-          <h2 style={{ fontSize: "2rem", fontWeight: "bold", color: "#22d3ee" }}>
-            {planet.project}
-          </h2>
-          <img src={planet.image} style={{ width: "100%", borderRadius: "0.5rem" }} />
-          <p style={{ color: "#d1d5db" }}>{planet.description}</p>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -723,72 +462,9 @@ function RocketScrollbar({
 
 // --- Main App ---
 function App() {
-  const [selectedPlanet, setSelectedPlanet] = useState<number | null>(null);
-  const [isZoomComplete, setIsZoomComplete] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const orbitRef = useRef<THREE.Object3D | null>(null);
   const scrollOffsetRef = useRef(0);
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showCarousel, setShowCarousel] = useState(false);
-
-  const images = ["/src/assets/images/1.png", "/src/assets/images/2.png", "/src/assets/images/3.png"];
-  const descriptions = [
-    "Exploring the frontiers of code in Addis Ababa.",
-    "Building innovative solutions with passion.",
-    "Celebrating achievements in software engineering."
-  ];
-  const aboutParagraph = (
-    <p style={{ fontSize: "1.1rem", lineHeight: 1.6 }}>
-      I'm Heran Weyessa, a Full Stack Software Engineer from Addis Ababa, Ethiopia, with 6 years of experience in coding, machine learning AI, web, and mobile development. Graduated from Addis Ababa Science and Technology University (2020-2025), proficient in C++, Java, Python, HTML/CSS/JS, SQL/NoSQL, Git, and Flutter. I've worked at Kifiya Financial Technology, freelanced, and interned at Yeneta Code, building projects like e-commerce sites, AI recommendation systems, and educational apps. Achieved 3rd place at the Google Developer Student Club Hackathon—excited to collaborate on innovative tech journeys!
-    </p>
-  );
-
-  const slides = [
-    { content: aboutParagraph, isImage: false },
-    ...images.map((img, index) => ({
-      content: (
-        <>
-          <img
-            src={img}
-            alt={`About me - Image ${index + 1}`}
-            style={{
-              width: "100%",
-              height: "auto",
-              borderRadius: "1rem",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
-            }}
-          />
-          <p style={{ textAlign: "center", color: "#9ca3af", fontSize: "0.9rem", marginTop: "1rem" }}>
-            {descriptions[index]}
-          </p>
-        </>
-      ),
-      isImage: true,
-    })),
-  ];
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowCarousel(true);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!showCarousel) return;
-    const interval = setInterval(() => {
-      setCurrentSlideIndex((prev) => (prev + 1) % slides.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [showCarousel, slides.length]);
-
-  const handlePrevSlide = () => {
-    setCurrentSlideIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  };
-
-  const handleNextSlide = () => {
-    setCurrentSlideIndex((prev) => (prev + 1) % slides.length);
-  };
+  const [isLoading, setIsLoading] = useState(true);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -825,115 +501,175 @@ function App() {
     return () => window.removeEventListener("wheel", handleWheel);
   }, []);
 
+  useEffect(() => {
+    THREE.DefaultLoadingManager.onLoad = () => {
+      setIsLoading(false);
+    };
+
+    return () => {
+      THREE.DefaultLoadingManager.onLoad = () => {};
+    };
+  }, []);
+
   return (
     <>
+      {isLoading && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "#020611",
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          Loading...
+        </div>
+      )}
       <BackgroundStars scrollOffsetRef={scrollOffsetRef} />
       <RocketScrollbar scrollRef={scrollRef} sectionCount={6} />
 
       {/* Top Navigation */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          background: "rgba(2,6,17,0.8)",
-          zIndex: 10,
-          padding: "1rem",
-          display: "flex",
-          justifyContent: "center",
-          backdropFilter: "blur(4px)",
-        }}
-      >
-        <nav>
-          <ul style={{ display: "flex", listStyle: "none", gap: "2rem" }}>
-            <li>
-              <button
-                onClick={() => scrollToSection("home")}
-                style={{
-                  color: "white",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
-                Home
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => scrollToSection("about")}
-                style={{
-                  color: "white",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
-                About
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => scrollToSection("skills")}
-                style={{
-                  color: "white",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
-                Skills
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => scrollToSection("experience")}
-                style={{
-                  color: "white",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
-                Experience
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => scrollToSection("projects")}
-                style={{
-                  color: "white",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
-                Projects
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => scrollToSection("contact")}
-                style={{
-                  color: "white",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
-                Contact
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </div>
+      {/* Top Navigation - Centered pill-style with yellow border */}
+<div
+  style={{
+    position: "fixed",
+    top: "1rem",
+    left: "50%",
+    transform: "translateX(-50%)",
+    zIndex: 10,
+    background: "rgba(192, 47, 144, 0.75)", // your pink color
+    border: "2px solid #fbbf24",           // yellow border (amber-400)
+    borderRadius: "9999px",                 // fully rounded pill shape
+    padding: "0.75rem 2rem",
+    backdropFilter: "blur(10px)",
+    boxShadow: "0 4px 30px rgba(0, 0, 0, 0.3)",
+  }}
+>
+  <nav>
+    <ul
+      style={{
+        display: "flex",
+        listStyle: "none",
+        margin: 0,
+        padding: 0,
+        gap: "2.5rem",
+      }}
+    >
+      <li>
+        <button
+          onClick={() => scrollToSection("home")}
+          style={{
+            color: "white",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "1rem",
+            padding: "0.5rem 0",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#fbbf24")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
+        >
+          Home
+        </button>
+      </li>
+      <li>
+        <button
+          onClick={() => scrollToSection("about")}
+          style={{
+            color: "white",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "1rem",
+            padding: "0.5rem 0",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#fbbf24")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
+        >
+          About
+        </button>
+      </li>
+      <li>
+        <button
+          onClick={() => scrollToSection("skills")}
+          style={{
+            color: "white",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "1rem",
+            padding: "0.5rem 0",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#fbbf24")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
+        >
+          Skills
+        </button>
+      </li>
+      <li>
+        <button
+          onClick={() => scrollToSection("experience")}
+          style={{
+            color: "white",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "1rem",
+            padding: "0.5rem 0",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#fbbf24")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
+        >
+          Experience
+        </button>
+      </li>
+      <li>
+        <button
+          onClick={() => scrollToSection("projects")}
+          style={{
+            color: "white",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "1rem",
+            padding: "0.5rem 0",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#fbbf24")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
+        >
+          Projects
+        </button>
+      </li>
+      <li>
+        <button
+          onClick={() => scrollToSection("contact")}
+          style={{
+            color: "white",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "1rem",
+            padding: "0.5rem 0",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#fbbf24")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
+        >
+          Contact
+        </button>
+      </li>
+    </ul>
+  </nav>
+</div>
 
       {/* Main scroll container */}
       <div
@@ -956,277 +692,12 @@ function App() {
           #scroll-container::-webkit-scrollbar { display: none; }
         `}</style>
 
-        {/* HOME SECTION */}
-        <section
-          id="home"
-          style={{
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            scrollSnapAlign: "start",
-            background: "transparent",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <Canvas
-            style={{ position: "absolute", width: "100%", height: "100%", zIndex: 2 }}
-            camera={{ position: [0, 0, 10], fov: 50 }}
-          >
-            <Suspense fallback={null}>
-              <AstronautAvatar />
-            </Suspense>
-          </Canvas>
-          <img
-            src="/public/me.png"
-            style={{ width: "200px", borderRadius: "50%", marginBottom: "1rem", zIndex: 3 }}
-          />
-          <h1 style={{ fontSize: "2.5rem", color: "#22d3ee", zIndex: 3 }}>Hi, I'm Heran 👋</h1>
-          <p style={{ maxWidth: "600px", textAlign: "center", color: "#d1d5db", zIndex: 3 }}>
-            I’m a software engineer crafting stellar web experiences in a cosmic universe. Scroll to
-            explore my skills and projects!
-          </p>
-          <p style={{ marginTop: "2rem", fontSize: "1rem", color: "#9ca3af", zIndex: 3 }}>
-            ⬇ Scroll Down ⬇
-          </p>
-        </section>
-
-        {/* ABOUT SECTION */}
-        <section
-          id="about"
-          style={{
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            scrollSnapAlign: "start",
-            background: "transparent",
-            position: "relative",
-            zIndex: 1,
-            padding: "2rem",
-          }}
-        >
-          <Canvas
-            style={{ position: "absolute", width: "100%", height: "100%", zIndex: 2 }}
-            camera={{ position: [0, 0, 10], fov: 50 }}
-          >
-            <Suspense fallback={null}>
-              <AstronautAvatar />
-            </Suspense>
-          </Canvas>
-          <h1 style={{ fontSize: "2.5rem", color: "#22d3ee", zIndex: 3, marginBottom: "2rem" }}>About Me</h1>
-          
-          {showCarousel && (
-            <div style={{ maxWidth: "800px", textAlign: "center", color: "#d1d5db", zIndex: 3, position: "relative" }}>
-              <div style={{ position: "relative", width: "100%", maxWidth: "600px" }}>
-                <button
-                  onClick={handlePrevSlide}
-                  style={{
-                    position: "absolute",
-                    left: "-80px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "rgba(34, 211, 238, 0.9)",
-                    border: "none",
-                    color: "white",
-                    fontSize: "3rem",
-                    width: "60px",
-                    height: "60px",
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 4,
-                    boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  ←
-                </button>
-                <div style={{ minHeight: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {slides[currentSlideIndex].content}
-                </div>
-                <button
-                  onClick={handleNextSlide}
-                  style={{
-                    position: "absolute",
-                    right: "-80px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "rgba(34, 211, 238, 0.9)",
-                    border: "none",
-                    color: "white",
-                    fontSize: "3rem",
-                    width: "60px",
-                    height: "60px",
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 4,
-                    boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  →
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* SKILLS SECTION */}
-        <section
-          id="skills"
-          style={{
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            color: "white",
-            scrollSnapAlign: "start",
-            background: "transparent",
-            position: "relative",
-            zIndex: 1,
-            padding: "2rem 2rem 0 2rem",
-          }}
-        >
-          <div style={{
-            width: "100%",
-            maxWidth: "800px",
-            textAlign: "center",
-            zIndex: 3,
-            marginTop: "2rem",
-            marginBottom: "1rem"
-          }}>
-            <h1 style={{ fontSize: "2.5rem", color: "#22d3ee" }}>Skills Constellation</h1>
-            <p style={{ color: "#d1d5db", fontSize: "1.1rem" }}>
-              Explore my skills as a constellation of expertise. Hover over stars for emphasis and rotate to navigate!
-            </p>
-          </div>
-          <Canvas
-            style={{ width: "100%", height: "80%", zIndex: 2 }}
-            camera={{ position: [0, 0, 5], fov: 45 }}
-          >
-            <ambientLight intensity={1.5} />
-            <pointLight position={[0, 0, 0]} intensity={2} color="#ffffff" />
-            <Suspense fallback={null}>
-              <SkillConstellation />
-              <AstronautAvatar />
-              <OrbitControls enableZoom={true} enablePan={true} />
-            </Suspense>
-          </Canvas>
-        </section>
-
-        {/* EXPERIENCE SECTION */}
-        <section
-          id="experience"
-          style={{
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            scrollSnapAlign: "start",
-            background: "transparent",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <Canvas
-            style={{ position: "absolute", width: "100%", height: "100%", zIndex: 2 }}
-            camera={{ position: [0, 0, 10], fov: 50 }}
-          >
-            <Suspense fallback={null}>
-              <AstronautAvatar />
-            </Suspense>
-          </Canvas>
-          <h1 style={{ fontSize: "2.5rem", color: "#22d3ee", zIndex: 3 }}>Experience</h1>
-          <div style={{ maxWidth: "600px", textAlign: "left", color: "#d1d5db", zIndex: 3 }}>
-            <h3 style={{ fontSize: "1.5rem", color: "#22d3ee" }}>
-              Software Engineer at Company X (2022 - Present)
-            </h3>
-            <p>Developed web applications using React and Node.js, orbiting through collaborative missions.</p>
-            <h3 style={{ fontSize: "1.5rem", color: "#22d3ee" }}>Intern at Company Y (2021)</h3>
-            <p>Assisted in backend development and database management, gaining agile experience.</p>
-          </div>
-        </section>
-
-        {/* PROJECTS SECTION */}
-        <section
-          id="projects"
-          style={{
-            minHeight: "100vh",
-            scrollSnapAlign: "start",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <Canvas
-            style={{ width: "100%", height: "100%", position: "relative", zIndex: 1 }}
-            camera={{ position: [80, 60, 80], fov: 50 }}
-          >
-            <ambientLight intensity={1.5} />
-            <directionalLight position={[10, 10, 10]} />
-            <pointLight position={[0, 5, 0]} intensity={4} />
-            <Suspense fallback={null}>
-              <SolarSystem
-                selectedPlanet={selectedPlanet}
-                setSelectedPlanet={setSelectedPlanet}
-                setIsZoomComplete={setIsZoomComplete}
-              />
-              <AstronautAvatar />
-              <OrbitControls ref={orbitRef as any} enableZoom />
-            </Suspense>
-          </Canvas>
-
-          {isZoomComplete && (
-            <ProjectDetail
-              planet={selectedPlanet !== null ? planets[selectedPlanet] : null}
-              onBack={() => {
-                setSelectedPlanet(null);
-                setIsZoomComplete(false);
-              }}
-            />
-          )}
-        </section>
-
-        {/* CONTACT SECTION */}
-        <section
-          id="contact"
-          style={{
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            scrollSnapAlign: "start",
-            background: "transparent",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <Canvas
-            style={{ position: "absolute", width: "100%", height: "100%", zIndex: 2 }}
-            camera={{ position: [0, 0, 10], fov: 50 }}
-          >
-            <Suspense fallback={null}>
-              <AstronautAvatar />
-            </Suspense>
-          </Canvas>
-          <h1 style={{ fontSize: "2.5rem", color: "#22d3ee", zIndex: 3 }}>Contact Me</h1>
-          <p style={{ maxWidth: "600px", textAlign: "center", color: "#d1d5db", zIndex: 3 }}>
-            Send a transmission to example@email.com or connect via LinkedIn. Open to new
-            missions!
-          </p>
-        </section>
+        <Home />
+        <About />
+        <Skills />
+        <Experience />
+        <Projects />
+        <Contact />
       </div>
     </>
   );

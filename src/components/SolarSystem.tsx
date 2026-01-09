@@ -1,12 +1,11 @@
 // src/components/SolarSystem.tsx
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef, useMemo } from "react";
-import {
-  Mesh,
-  Vector3,
-} from "three";
-import { useGLTF, Line } from "@react-three/drei";
+import { Mesh, Vector3 } from "three";
+import { useGLTF, Line, Html } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+
+
 
 // ---------------- Types ----------------
 export interface Planet {
@@ -19,76 +18,95 @@ export interface Planet {
   initialAngle: number;
   description: string;
   image: string;
+  images?: string[];
   technologies: string[];
+  orientation?: 'portrait' | 'landscape';  // ← Add this (optional)
+}
+
+export interface SolarSystemProps {
+  selectedPlanet: number | null;
+  setSelectedPlanet: React.Dispatch<React.SetStateAction<number | null>>;
+  setIsZoomComplete: React.Dispatch<React.SetStateAction<boolean>>;
+  currentGuideIndex?: number; // -1 = no guide, 0..8 = guide for that planet
 }
 
 // ---------------- Data ----------------
-// eslint-disable-next-line react-refresh/only-export-components
 export const planets: Planet[] = [
   {
     name: "Mercury",
     distance: 13,
     speed: 0.5,
     size: 1.6,
-    project: "Project 1",
-    link: "https://github.com/heranulcha/project1",
+    project: "Personalized and Inclusive Learning App for Kids",
+    link: "https://github.com/heran26/final-year-project2",
     initialAngle: 0,
     description:
-      "A detailed description of Project 1, focusing on its goals, the technologies used, and my role in its development.",
+      "A personalized and inclusive learning app for children aged 4 to 14, featuring interactive games and digital books. The app helps kids learn letters and words, explore cooking basics, discover outer space, and practice sign language through fun, age-appropriate activities. Designed to support different learning styles, it creates an engaging and accessible learning experience for every child.",
     image: "/images/project1.png",
-    technologies: ["Java", "Python", "React"],
+    images: [
+  "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg",
+],
+    technologies: ["Flutter", "Node JS", "Express JS", "Python", "Mongo DB", "Supabase"],
   },
   {
     name: "Venus",
     distance: 20,
     speed: 0.35,
     size: 1.8,
-    project: "Project 2",
-    link: "https://github.com/heranulcha/project2",
+    project: "Queue Managment System",
+    link: "https://heran-queue-managment-system-burz9c9lw-herans-projects-649510bd.vercel.app/",
     initialAngle: Math.PI,
     description:
-      "Description for Project 2. This project solved a specific problem by implementing a unique algorithm and a user-friendly interface.",
+      "The Queue Management System allows users to buy tickets and register in a queue online, helping them avoid long waiting times and making the process faster and easier.",
     image: "/images/project2.png",
-    technologies: ["TypeScript", "Node.js", "MongoDB"],
+    images: [
+  "web1.jpg", "web2.jpg", "web3.jpg", "web4.jpg", "web5.jpg"],
+    technologies: ["React", "Vite", "JavaScript", "Node.js", "Express.js", "MongoDB", "Vercel"],
   },
   {
     name: "Earth",
     distance: 27,
     speed: 0.3,
     size: 1.9,
-    project: "Project 3",
-    link: "https://github.com/heranulcha/project3",
+    project: "Planogram Mobile App",
+    link: "https://github.com/heran26/planogram",
     initialAngle: Math.PI / 4,
     description:
-      "Description for Project 3. A collaborative effort that involved version control, agile methodologies, and resulted in a high-performance web app.",
+      "A cross-platform mobile application built with Flutter that uses AI-powered object detection and segmentation (YOLOv8) to scan retail shelves, identify products, and detect misplaced items. The app provides real-time compliance feedback against predefined planograms, generates reports, and helps retailers improve shelf organization, inventory management, and operational efficiency. The backend is powered by Flask, delivering AI predictions seamlessly to the mobile interface.",
     image: "/images/project3.png",
-    technologies: ["React", "Express", "PostgreSQL"],
+     images: [
+  "plan1.PNG", "plan2.PNG", "plan3.PNG", "plan4.PNG", "plan5.PNG", "plan6.PNG", "plan7.PNG",],
+    technologies: ["Flutter", "Express", "NodeJs", "MongoDB", "Python", "Flask", "YOLOv8", "Roboflow", "Polygonal Instance Segmentation"],
   },
   {
     name: "Mars",
     distance: 34,
     speed: 0.25,
     size: 1.7,
-    project: "Project 4",
+    project: "Plant Disease Detection & Management App",
     link: "https://github.com/heranulcha/project4",
     initialAngle: Math.PI / 2,
     description:
-      "Description for Project 4. I was responsible for the back-end architecture, database design, and API development.",
+      "This is a smart mobile application that helps farmers detect plant diseases early using deep learning and image recognition. By scanning plant leaves, the app identifies diseases and provides detailed information on symptoms, prevention methods, and treatment solutions.The app also includes an integrated agricultural marketplace, allowing farmers to purchase fertilizers and equipment needed for treatment, along with a merchant panel for sellers to manage and list their products. Planto combines AI and mobile technology to support farmers in improving crop health, reducing losses, and increasing productivity.",
     image: "/images/project4.png",
-    technologies: ["Java", "Spring Boot", "MySQL"],
+     images: [
+  "plant1.PNG", "plant2.PNG", "plant3.PNG"],
+    technologies: ["Python", "TensorFlow", "Keras", "Convolutional Neural Networks", "TensorFlow Lite", "Jupyter Notebook", "Flutter", "Dart", "Firebase"],
   },
   {
     name: "Jupiter",
     distance: 41,
     speed: 0.1,
     size: 2.4,
-    project: "Project 5",
-    link: "https://github.com/heranulcha/project5",
+    project: "Inter-Institutional Portal",
+    link: "https://github.com/heran26/InterInstitutional-portal.git",
     initialAngle: (3 * Math.PI) / 4,
     description:
-      "Description for Project 5, a mobile-first application built with React Native and integrated with various third-party services.",
+      "DataExchange is a secure digital platform designed to enable Ethiopian government institutions to share data and services efficiently through modern technology. The system replaces manual, paper-based processes with a centralized, API-driven solution that allows institutions to register, request data, review access, and exchange information securely under administrative oversight. By connecting multiple public institutions on one platform, DataExchange helps reduce delays, improve transparency, enhance collaboration, and support better decision-making. The platform ensures high reliability, strong security, and 24/7 access, ultimately improving the quality and speed of public services delivered to citizens.",
     image: "/images/project5.png",
-    technologies: ["React Native", "Firebase", "TypeScript"],
+    images: [
+  "inter1.PNG", "inter2.PNG", "inter3.PNG", "inter4.PNG"],
+    technologies: ["React Native", "Node.js", "TypeScript", "Express.js", "SQL", ],
   },
   {
     name: "Saturn",
@@ -155,13 +173,12 @@ function createOrbitPath(radius: number, segments: number = 64) {
 }
 
 // ---------------- Component ----------------
-interface SolarSystemProps {
-  selectedPlanet: number | null;
-  setSelectedPlanet: (index: number | null) => void;
-  setIsZoomComplete: (value: boolean) => void;
-}
-
-function SolarSystem({ selectedPlanet, setSelectedPlanet, setIsZoomComplete }: SolarSystemProps) {
+function SolarSystem({
+  selectedPlanet,
+  setSelectedPlanet,
+  setIsZoomComplete,
+  currentGuideIndex = -1,
+}: SolarSystemProps) {
   const sunRef = useRef<Mesh>(null);
   const planetRefs = useRef<(Mesh | null)[]>([]);
 
@@ -180,10 +197,35 @@ function SolarSystem({ selectedPlanet, setSelectedPlanet, setIsZoomComplete }: S
   const neptuneData = useGLTF("/models/neptune.glb", false);
   const plutoData = useGLTF("/models/pluto.glb", false);
 
+  const planetModels = useMemo(
+    () => [
+      mercuryData,
+      venusData,
+      earthData,
+      marsData,
+      jupiterData,
+      saturnData,
+      uranusData,
+      neptuneData,
+      plutoData,
+    ],
+    [
+      mercuryData,
+      venusData,
+      earthData,
+      marsData,
+      jupiterData,
+      saturnData,
+      uranusData,
+      neptuneData,
+      plutoData,
+    ]
+  );
+
   useFrame(({ clock }) => {
     const elapsedTime = clock.getElapsedTime();
 
-    // orbit + rotation
+    // Orbit + rotation
     planetRefs.current.forEach((planet, index) => {
       if (planet) {
         const { distance, speed, initialAngle } = planets[index];
@@ -196,7 +238,7 @@ function SolarSystem({ selectedPlanet, setSelectedPlanet, setIsZoomComplete }: S
 
     if (sunRef.current) sunRef.current.rotation.y += 0.002;
 
-    // camera behavior
+    // Camera behavior
     if (selectedPlanet === null) {
       camera.position.lerp(defaultCameraPosition, 0.2);
       if (controls) {
@@ -226,31 +268,6 @@ function SolarSystem({ selectedPlanet, setSelectedPlanet, setIsZoomComplete }: S
     }
   });
 
-  const planetModels = useMemo(
-    () => [
-      mercuryData,
-      venusData,
-      earthData,
-      marsData,
-      jupiterData,
-      saturnData,
-      uranusData,
-      neptuneData,
-      plutoData,
-    ],
-    [
-      mercuryData,
-      venusData,
-      earthData,
-      marsData,
-      jupiterData,
-      saturnData,
-      uranusData,
-      neptuneData,
-      plutoData,
-    ]
-  );
-
   return (
     <group position={[0, 5, 0]}>
       {selectedPlanet === null && (
@@ -266,6 +283,8 @@ function SolarSystem({ selectedPlanet, setSelectedPlanet, setIsZoomComplete }: S
 
         const isVisible = selectedPlanet === null || selectedPlanet === index;
         if (!isVisible) return null;
+
+        const isCurrentGuide = currentGuideIndex === index;
 
         return (
           <group key={`${planet.name}-group`}>
@@ -285,6 +304,31 @@ function SolarSystem({ selectedPlanet, setSelectedPlanet, setIsZoomComplete }: S
               }}
             >
               <primitive object={planetModel.clone()} scale={planet.size * 2} />
+
+              {/* Guide tooltip - shows only when it's the current guided planet and no project is selected */}
+              {isCurrentGuide && selectedPlanet === null && (
+                <Html
+                  center
+                  position={[0, planet.size * 2.8 + 1, 0]}
+                  style={{
+                    transform: "translate(-50%, -100%)",
+                    background: "rgba(30, 41, 59, 0.92)",
+                    color: "#e2e8f0",
+                    padding: "14px 22px",
+                    borderRadius: "16px",
+                    border: "2px solid #fbbf24",
+                    fontSize: "1.15rem",
+                    fontWeight: 500,
+                    whiteSpace: "nowrap",
+                    pointerEvents: "none",
+                    boxShadow: "0 6px 20px rgba(251, 191, 36, 0.35)",
+                    backdropFilter: "blur(6px)",
+                    zIndex: 100,
+                  }}
+                >
+                   Project {index + 1}
+                </Html>
+              )}
             </mesh>
           </group>
         );
