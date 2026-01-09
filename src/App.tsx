@@ -1,6 +1,5 @@
 // App.tsx
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
 import React, { Suspense, useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
